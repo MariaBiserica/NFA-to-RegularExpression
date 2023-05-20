@@ -101,6 +101,16 @@ void Transitions::DeleteTransition(TransitionFunctionInputs transitionInputs, st
 	}
 }
 
+bool Transitions::ExistsEpsilonTransiton()
+{
+	for (auto& transition : m_delta)
+	{
+		if (transition.first.second == "E")
+			return true;
+	}
+	return false;
+}
+
 bool Transitions::ExistsTransition(std::string transitionState, std::string transitionSymbol)
 {
 	if (m_delta.find(std::make_pair(transitionState, transitionSymbol)) != m_delta.end())

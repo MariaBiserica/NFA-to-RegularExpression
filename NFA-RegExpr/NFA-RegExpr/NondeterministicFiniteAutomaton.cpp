@@ -329,6 +329,12 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
     
     //erase the state to be deleted from m_states
     m_states.erase(std::remove(m_states.begin(), m_states.end(), stateToErase), m_states.end());
+
+	//if there are no transitions left using "E" symbol, remove it from the alphabet
+    if (!m_transitions.ExistsEpsilonTransiton())
+    {
+        m_alphabet.erase(std::remove(m_alphabet.begin(), m_alphabet.end(), 'E'), m_alphabet.end());
+    }
 }
 
 Transitions NondeterministicFiniteAutomaton::GetTransitions()

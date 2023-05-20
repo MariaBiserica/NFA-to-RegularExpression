@@ -28,6 +28,7 @@ public:
 	void UpdateTransitionSymbol(TransitionFunctionInputs transitionOldInputs, std::string transitionFinalState, std::string newTransitionSymbol);
 	void DeleteTransition(TransitionFunctionInputs transitionInputs, std::string transitionFinalState);
 
+	bool ExistsEpsilonTransiton();
 	bool ExistsTransition(std::string transitionState, std::string transitionSymbol);
 	bool ExistsTransitionBetweenStates(std::string inState, std::string outState);
 
