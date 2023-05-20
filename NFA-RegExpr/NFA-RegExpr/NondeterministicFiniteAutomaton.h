@@ -24,9 +24,9 @@ public:
 	std::vector<std::string> GetStates();
 
 private:
-	std::vector<std::string> m_states; //Q - multime finita nevida de stari = m_VN
-	std::string m_alphabet; //sigma - simbolurile / alfabetul de intrare = m_VT
-	std::string m_initialState; //q0 - stare initiala = m_S
-	std::vector<std::string> m_finalStates; //F - multimea starilor finale, inclusa in Q
-	Transitions m_transitions; //transition function - input:(stare, simbol) -> o stare
+	std::vector<std::string> m_states; //Q - finite non-empty set of states = m_VN
+	std::string m_alphabet; //sigma - input symbols / input alphabet = m_VT
+	std::string m_initialState; //q0 - initial state = m_S
+	std::vector<std::string> m_finalStates; //F - set of final states, included in Q
+	Transitions m_transitions; //transition function - input: (state, symbol) -> a state
 };

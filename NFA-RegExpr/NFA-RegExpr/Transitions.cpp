@@ -1,4 +1,5 @@
 #include "Transitions.h"
+#include <Windows.h>
 
 void Transitions::PrintTransitions()
 {
@@ -148,6 +149,7 @@ int Transitions::GetOutNumberOfTransitions(std::string state)
 
 std::vector<std::string> Transitions::GetInTransitions(std::string state)
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	//vector of strings that contains the start states of the transitions that have the state as a result state
 	//dont count the transtions that have the state as a start state
 	std::vector<std::string> inTransitions;
@@ -159,16 +161,19 @@ std::vector<std::string> Transitions::GetInTransitions(std::string state)
 	}
 	
 	//print the result states
-	std::cout << "IN:";
+	SetConsoleTextAttribute(hConsole, 9);
+	std::cout << "IN: ";
 	for (const auto& s : inTransitions)
 		std::cout << s << " ";
 	std::cout << std::endl;
-	
+	SetConsoleTextAttribute(hConsole, 7);
+
 	return inTransitions;
 }
 
 std::vector<std::string> Transitions::GetOutTransitions(std::string state)
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	//vector of strings that contains the result states of the transitions that have the state as a start state
 	//dont count the transtions that have the state as a result state
 	std::vector<std::string> outTransitions;
@@ -179,10 +184,12 @@ std::vector<std::string> Transitions::GetOutTransitions(std::string state)
 	}
 	
 	//print the start states
+	SetConsoleTextAttribute(hConsole, 9);
 	std::cout << "OUT:";
 	for (const auto& s : outTransitions)
 		std::cout << s << " ";
 	std::cout << std::endl;
+	SetConsoleTextAttribute(hConsole, 7);
 
 	return outTransitions;
 }

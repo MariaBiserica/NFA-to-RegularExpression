@@ -3,7 +3,6 @@
 
 bool NondeterministicFiniteAutomaton::ReadNFA()
 {
-    //read from file
     std::ifstream fin("inputNFA.txt");
     if (!fin.is_open())
     {
@@ -74,8 +73,8 @@ bool NondeterministicFiniteAutomaton::ReadNFA()
 
 void NondeterministicFiniteAutomaton::PrintNFA()
 {
-    std::cout << "Elementele automatului sunt: " << std::endl;
-    std::cout << "Stari - Q:{";
+    std::cout << "Elements of the automaton are: " << std::endl;
+    std::cout << "States - Q:{";
     for (int i = 0; i < m_states.size(); i++)
     {
         if (i != (m_states.size() - 1))
@@ -84,7 +83,7 @@ void NondeterministicFiniteAutomaton::PrintNFA()
             std::cout << m_states[i] << "}" << std::endl;
     }
 
-    std::cout << "Alfabet de intrare - Sigma:{";
+    std::cout << "Input alphabet - Sigma:{";
     for (int i = 0; i < m_alphabet.size(); i++)
     {
         if (i != (m_alphabet.size() - 1))
@@ -93,9 +92,9 @@ void NondeterministicFiniteAutomaton::PrintNFA()
             std::cout << m_alphabet[i] << "}" << std::endl;
     }
 
-    std::cout << "Stare initiala: " << m_initialState << std::endl;
+    std::cout << "Initial state: " << m_initialState << std::endl;
 
-    std::cout << "Multimea starilor finale - F:{";
+    std::cout << "Set of final states - F:{";
     for (int i = 0; i < m_finalStates.size(); i++)
     {
         if (i != (m_finalStates.size() - 1))
@@ -104,7 +103,7 @@ void NondeterministicFiniteAutomaton::PrintNFA()
             std::cout << m_finalStates[i] << "}" << std::endl;
     }
 
-    std::cout << "Functia de tranzitie:" << std::endl;
+    std::cout << "Transition function:" << std::endl;
     m_transitions.PrintTransitions();
 }
 
@@ -163,7 +162,6 @@ std::string NondeterministicFiniteAutomaton::getNextStateToDelete()
 
 void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 {
-
     std::vector<std::string> inTransitions = m_transitions.GetInTransitions(stateToErase);
     std::vector<std::string> outTransitions = m_transitions.GetOutTransitions(stateToErase);
 
@@ -176,18 +174,17 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
             std::string outSymbol = m_transitions.GetTransitionSymbol(stateToErase, outTransitions[o]);
             std::string newTransitionSymbol = "";
                 
-            //verificam daca exista si tranzitie directa de la starea de IN la starea de OUT
+			//check if there is a direct transition from the IN state to the OUT state
             if (m_transitions.ExistsTransitionBetweenStates(inTransitions[i], outTransitions[o]))
             {
-                //daca exista, eliminam tranzitia prin starea de sters si actualizam tranzitia directa                    
-                //vom adauga la simbolul tranzitiei directe : "|" + "simbolul tranzitiei intermediare prin starea de sters"
-                //dorim sa concatenam simbolurile tranzitiilor prin starea de sters
+				//if there is, we eliminate the transition through the state to be deleted and update the direct transition
+				//we will add to the symbol of the direct transition: "|" + "the symbol of the intermediate transition through the state to be deleted"
+				//we want to concatenate the symbols of the "transitions through the state to be deleted"
 
-				//obtinem simbolul tranzitiei directe
+				//get the symbol of the direct transition
                 std::string directSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], outTransitions[o]);
-				std::cout << inTransitions[i] << "-" << directSymbol << "->" << outTransitions[o] << std::endl;
 
-                //actualizam simbolul tranzitiei directe, in functie de caz
+				//update the symbol of the direct transition, depending on the case
 				if (inSymbol != "E" && outSymbol != "E" && directSymbol != "E")
 				{
 					newTransitionSymbol = inSymbol + outSymbol + "|" + directSymbol;
@@ -225,8 +222,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
             }
             else
             {
-                //if there's no direct transition, we will create one
-                    
+                //if there's no direct transition, we will create one 
 				//check if there's a loop to self in the erase state
 				if (m_transitions.ExistsTransitionBetweenStates(stateToErase, stateToErase))
 				{
@@ -312,7 +308,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
         }
     }
 
-    //stergem tranzitiile intermediare prin starea de sters
+    //erase the transitions through the state to be deleted
     for (int i = 0; i < inTransitions.size(); i++)
     {
         for (int o = 0; o < outTransitions.size(); o++)
@@ -331,7 +327,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 		}
 	}
     
-    //scoatem starea de sters din multimea de stari
+    //erase the state to be deleted from m_states
     m_states.erase(std::remove(m_states.begin(), m_states.end(), stateToErase), m_states.end());
 }
 
