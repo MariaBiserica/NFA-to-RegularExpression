@@ -1,27 +1,14 @@
 #include "NondeterministicFiniteAutomaton.h"
 #include<fstream>
 
-NondeterministicFiniteAutomaton::NondeterministicFiniteAutomaton()
-{
-}
-
-NondeterministicFiniteAutomaton::NondeterministicFiniteAutomaton(std::vector<std::string> states, std::string alphabet, Transitions transitions, std::string initialState, std::vector<std::string> finalStates)
-    :m_states(states),
-    m_alphabet(alphabet),
-    m_transitions(transitions),
-    m_initialState(initialState),
-    m_finalStates(finalStates)
-{
-}
-
-void NondeterministicFiniteAutomaton::ReadNFA()
+bool NondeterministicFiniteAutomaton::ReadNFA()
 {
     //read from file
     std::ifstream fin("inputNFA.txt");
     if (!fin.is_open())
     {
         std::cout << "Error opening file!" << std::endl;
-        return;
+        return false;
     }
     else
     {
@@ -82,6 +69,7 @@ void NondeterministicFiniteAutomaton::ReadNFA()
 
     }
     fin.close();
+    return true;
 }
 
 void NondeterministicFiniteAutomaton::PrintNFA()
@@ -183,164 +171,144 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
     {
         for (int o = 0; o < outTransitions.size(); o++)
         {
-            ////verificam daca exista tranzitie prin starea de sters
-            //if (m_transitions.ExistsTransitionBetweenStates(inTransitions[i], stateToErase) && m_transitions.ExistsTransitionBetweenStates(stateToErase, outTransitions[o]))
-            //{
-                std::cout << "EXISTA!" << std::endl;
-                std::string inSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], stateToErase);
-				std::cout << inTransitions[i] << "-" << inSymbol << "->" << stateToErase << std::endl;
-                std::string outSymbol = m_transitions.GetTransitionSymbol(stateToErase, outTransitions[o]);
-				std::cout << stateToErase << "-" << outSymbol << "->" << outTransitions[o] << std::endl;
-                std::string newTransitionSymbol = "";
+
+            std::string inSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], stateToErase);
+            std::string outSymbol = m_transitions.GetTransitionSymbol(stateToErase, outTransitions[o]);
+            std::string newTransitionSymbol = "";
                 
-                //verificam daca exista si tranzitie directa de la starea de IN la starea de OUT
-                if (m_transitions.ExistsTransitionBetweenStates(inTransitions[i], outTransitions[o]))
+            //verificam daca exista si tranzitie directa de la starea de IN la starea de OUT
+            if (m_transitions.ExistsTransitionBetweenStates(inTransitions[i], outTransitions[o]))
+            {
+                //daca exista, eliminam tranzitia prin starea de sters si actualizam tranzitia directa                    
+                //vom adauga la simbolul tranzitiei directe : "|" + "simbolul tranzitiei intermediare prin starea de sters"
+                //dorim sa concatenam simbolurile tranzitiilor prin starea de sters
+
+				//obtinem simbolul tranzitiei directe
+                std::string directSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], outTransitions[o]);
+				std::cout << inTransitions[i] << "-" << directSymbol << "->" << outTransitions[o] << std::endl;
+
+                //actualizam simbolul tranzitiei directe, in functie de caz
+				if (inSymbol != "E" && outSymbol != "E" && directSymbol != "E")
+				{
+					newTransitionSymbol = inSymbol + outSymbol + "|" + directSymbol;
+				}
+                else if (inSymbol != "E" && outSymbol != "E" && directSymbol == "E")
                 {
-                    //daca exista, eliminam tranzitia prin starea de sters si actualizam tranzitia directa                    
-                    //vom adauga la simbolul tranzitiei directe : "|" + "simbolul tranzitiei intermediare prin starea de sters"
-                    //dorim sa concatenam simbolurile tranzitiilor prin starea de sters
-
-					//obtinem simbolul tranzitiei directe
-                    std::string directSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], outTransitions[o]);
-					std::cout << inTransitions[i] << "-" << directSymbol << "->" << outTransitions[o] << std::endl;
-
-                    //actualizam simbolul tranzitiei directe, in functie de caz
-					if (inSymbol != "E" && outSymbol != "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = inSymbol + outSymbol + "|" + directSymbol;
-					}
-                    else if (inSymbol != "E" && outSymbol != "E" && directSymbol == "E")
+					newTransitionSymbol = inSymbol + outSymbol;
+				}
+				else if (inSymbol != "E" && outSymbol == "E" && directSymbol != "E")
+				{
+					newTransitionSymbol = inSymbol + "|" + directSymbol;
+				}
+				else if (inSymbol == "E" && outSymbol != "E" && directSymbol != "E")
+				{
+					newTransitionSymbol = outSymbol + "|" + directSymbol;
+				}
+				else if (inSymbol != "E" && outSymbol == "E" && directSymbol == "E")
+				{
+					newTransitionSymbol = inSymbol;
+				}
+				else if (inSymbol == "E" && outSymbol != "E" && directSymbol == "E")
+				{
+					newTransitionSymbol = outSymbol;
+				}
+				else if (inSymbol == "E" && outSymbol == "E" && directSymbol != "E")
+				{
+					newTransitionSymbol = directSymbol;
+				}
+				else
+				{
+					newTransitionSymbol = "E";
+                }
+                    
+                m_transitions.UpdateTransitionSymbol(std::make_pair(inTransitions[i], directSymbol), outTransitions[o], newTransitionSymbol);
+            }
+            else
+            {
+                //if there's no direct transition, we will create one
+                    
+				//check if there's a loop to self in the erase state
+				if (m_transitions.ExistsTransitionBetweenStates(stateToErase, stateToErase))
+				{
+					//if there is, we will add the symbol of the transition to the direct transition
+                    std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
+                        
+					//let's check the symbols of the transitions
+                    if (inSymbol != "E" && loopSymbol != "E" && outSymbol != "E")
                     {
-						newTransitionSymbol = inSymbol + outSymbol;
+						if (loopSymbol.size() > 1)
+						{
+							newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+						}
+                        else
+                        {
+                            newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+                        }
 					}
-					else if (inSymbol != "E" && outSymbol == "E" && directSymbol != "E")
+					else if (inSymbol == "E" && loopSymbol == "E" && outSymbol == "E")
 					{
-						newTransitionSymbol = inSymbol + "|" + directSymbol;
+						newTransitionSymbol = "E";
 					}
-					else if (inSymbol == "E" && outSymbol != "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = outSymbol + "|" + directSymbol;
-					}
-					else if (inSymbol != "E" && outSymbol == "E" && directSymbol == "E")
+                    else if (inSymbol != "E" && loopSymbol == "E" && outSymbol == "E")
 					{
 						newTransitionSymbol = inSymbol;
 					}
-					else if (inSymbol == "E" && outSymbol != "E" && directSymbol == "E")
+                    else if (inSymbol == "E" && loopSymbol != "E" && outSymbol == "E")
+					{
+						newTransitionSymbol = loopSymbol + "*";
+					}	
+					else if (inSymbol == "E" && loopSymbol == "E" && outSymbol != "E")
 					{
 						newTransitionSymbol = outSymbol;
 					}
-					else if (inSymbol == "E" && outSymbol == "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = directSymbol;
-					}
-					else
-					{
-						newTransitionSymbol = "E";
+                    else if (inSymbol != "E" && loopSymbol != "E" && outSymbol == "E")
+                    {
+                        newTransitionSymbol = inSymbol + loopSymbol + "*";
                     }
-                    
-                    m_transitions.UpdateTransitionSymbol(std::make_pair(inTransitions[i], directSymbol), outTransitions[o], newTransitionSymbol);
-                }
+					else if (inSymbol == "E" && loopSymbol != "E" && outSymbol != "E")
+					{
+						newTransitionSymbol = loopSymbol + "*" + outSymbol;
+                    }
+                    else if (inSymbol != "E" && loopSymbol == "E" && outSymbol != "E")
+                    {
+						newTransitionSymbol = inSymbol + outSymbol;
+                    }
+				}
                 else
                 {
-                    //if there's no direct transition, we will create one
-					//std::cout << "Nu exista tranzitie directa, o cream!" << std::endl;
-                    
-					//check if there's a loop to self in the erase state
-					if (m_transitions.ExistsTransitionBetweenStates(stateToErase, stateToErase))
-					{
-						//if there is, we will add the symbol of the transition to the direct transition
-						//std::cout << "Exista bucla la starea de sters, adaugam simbolul tranzitiei la tranzitia directa!" << std::endl;
-                        std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
-                        
-						//let's check the symbols of the transitions
-                        if (inSymbol != "E" && loopSymbol != "E" && outSymbol != "E")
-                        {
-							if (loopSymbol.size() > 1)
-							{
-								newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
-							}
-                            else
-                            {
-                                newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
-                            }
-						}
-						else if (inSymbol == "E" && loopSymbol == "E" && outSymbol == "E")
-						{
-							newTransitionSymbol = "E";
-						}
-                        else if (inSymbol != "E" && loopSymbol == "E" && outSymbol == "E")
-						{
-							newTransitionSymbol = inSymbol;
-						}
-                        else if (inSymbol == "E" && loopSymbol != "E" && outSymbol == "E")
-						{
-							newTransitionSymbol = loopSymbol + "*";
-						}	
-						else if (inSymbol == "E" && loopSymbol == "E" && outSymbol != "E")
-						{
-							newTransitionSymbol = outSymbol;
-						}
-                        else if (inSymbol != "E" && loopSymbol != "E" && outSymbol == "E")
-                        {
-                            newTransitionSymbol = inSymbol + loopSymbol + "*";
-                        }
-						else if (inSymbol == "E" && loopSymbol != "E" && outSymbol != "E")
-						{
-							newTransitionSymbol = loopSymbol + "*" + outSymbol;
-                        }
-                        else if (inSymbol != "E" && loopSymbol == "E" && outSymbol != "E")
-                        {
-							newTransitionSymbol = inSymbol + outSymbol;
-                        }
-					}
-                    else
+					//if there's no loop to self, we will just add the symbols of the transitions
+					//let's check the symbols of the transitions
+                    if (inSymbol != "E" && outSymbol != "E")
                     {
-						//if there's no loop to self, we will just add the symbols of the transitions
-						//std::cout << "Nu exista bucla la starea de sters, adaugam simbolurile tranzitiilor intermediare!" << std::endl;
-                        
-						//let's check the symbols of the transitions
-                        if (inSymbol != "E" && outSymbol != "E")
-                        {
-							if (inSymbol.find('|') != std::string::npos)
-							{
-								newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
-							}
-							else if (outSymbol.find('|') != std::string::npos)
-							{
-								newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
-							}
-							else
-							{
-								newTransitionSymbol = inSymbol + outSymbol;
-							}
-                        }
-						else if (inSymbol != "E" && outSymbol == "E")
+						if (inSymbol.find('|') != std::string::npos)
 						{
-							newTransitionSymbol = inSymbol;
+							newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
 						}
-						else if (inSymbol == "E" && outSymbol != "E")
+						else if (outSymbol.find('|') != std::string::npos)
 						{
-							newTransitionSymbol = outSymbol;
+							newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
 						}
-                        else 
+						else
 						{
-							newTransitionSymbol = "E";
+							newTransitionSymbol = inSymbol + outSymbol;
 						}
                     }
-                    
-                    m_transitions.InsertTransition(inTransitions[i], newTransitionSymbol, { outTransitions[o] });
+					else if (inSymbol != "E" && outSymbol == "E")
+					{
+						newTransitionSymbol = inSymbol;
+					}
+					else if (inSymbol == "E" && outSymbol != "E")
+					{
+						newTransitionSymbol = outSymbol;
+					}
+                    else 
+					{
+						newTransitionSymbol = "E";
+					}
                 }
-                
-                //stergem tranzitiile intermediare prin starea de sters
-                /*m_transitions.DeleteTransition(std::make_pair(inTransitions[i], inSymbol), stateToErase);
-                m_transitions.DeleteTransition(std::make_pair(stateToErase, outSymbol), outTransitions[o]);*/
-            /*}
-            else
-            {
-                std::cout << "Nu exista tranzitiile:" << std::endl;
-				std::cout << inTransitions[i] << "->" << stateToErase << std::endl;
-				std::cout << stateToErase << "->" << outTransitions[o] << std::endl;
-            }*/
+                    
+                m_transitions.InsertTransition(inTransitions[i], newTransitionSymbol, { outTransitions[o] });
+            }
         }
     }
 
@@ -375,19 +343,4 @@ Transitions NondeterministicFiniteAutomaton::GetTransitions()
 std::vector<std::string> NondeterministicFiniteAutomaton::GetStates()
 {
     return m_states;
-}
-
-std::string NondeterministicFiniteAutomaton::GetInitialState()
-{
-    return m_initialState;
-}
-
-std::vector<std::string> NondeterministicFiniteAutomaton::GetFinalStates()
-{
-    return m_finalStates;
-}
-
-std::string NondeterministicFiniteAutomaton::GetAlphabet()
-{
-    return m_alphabet;
 }

@@ -1,12 +1,26 @@
 #include "Transitions.h"
 
-Transitions::Transitions()
+void Transitions::PrintTransitions()
 {
-}
-
-Transitions::Transitions(Unordered_map delta, std::vector<std::string> states, std::string symbols)
-	:m_delta(delta), m_states(states), m_symbols(symbols)
-{
+	for (const auto& element : m_delta)
+	{
+		if (element.second.size() == 1)
+		{
+			std::cout << "delta ( " << element.first.first << ", " << element.first.second << " ) = ";
+			std::cout << element.second[0] << std::endl;
+		}
+		else
+		{
+			std::cout << "delta ( " << element.first.first << ", " << element.first.second << " ) = {";
+			for (int i = 0; i < element.second.size(); i++)
+			{
+				if (i != (element.second.size() - 1))
+					std::cout << element.second[i] << ", ";
+				else
+					std::cout << element.second[i] << "}" << std::endl;
+			}
+		}
+	}
 }
 
 void Transitions::InsertTransition(std::string transitionState, std::string transitionSymbol, std::vector<std::string> transitionResultStates)
@@ -103,73 +117,6 @@ bool Transitions::ExistsTransitionBetweenStates(std::string inState, std::string
 	return false;
 }
 
-std::vector<std::string> Transitions::GetTransitionResultStates(std::string transitionState, std::string transitionSymbol)
-{
-	auto resultState = m_delta.find(std::make_pair(transitionState, transitionSymbol));
-	if (resultState != m_delta.end())
-		return resultState->second;
-	else
-		return {};
-}
-
-std::vector<std::string> Transitions::GetTransitionResultStates(LambdaClosure lambdaClosure, std::string transitionSymbol)
-{
-	std::vector<std::string> resultStates;
-	for (auto& state : lambdaClosure)
-	{
-		auto transitionResultStates = GetTransitionResultStates(state, transitionSymbol);
-		resultStates.insert(resultStates.end(), transitionResultStates.begin(), transitionResultStates.end());
-	}
-	return resultStates;
-}
-
-LambdaClosure Transitions::GetLambdaClosure(std::string state)
-{
-	std::queue<std::string> statesToVisit;
-	LambdaClosure lambdaClosure;
-	statesToVisit.push(state);
-	lambdaClosure.insert(state);
-
-	while (!statesToVisit.empty()) {
-		std::string currentState = statesToVisit.front();
-		statesToVisit.pop();
-		if (ExistsTransition(currentState, "-"))
-		{
-			std::vector<std::string> resultStates = GetTransitionResultStates(currentState, "-");
-			for (auto& s : resultStates)
-			{
-				lambdaClosure.insert(s);
-				statesToVisit.push(s);
-			}
-		}
-	}
-
-	return lambdaClosure;
-}
-
-void Transitions::PrintTransitions()
-{
-	for (const auto& element : m_delta)
-	{
-		if (element.second.size() == 1)
-		{
-			std::cout << "delta ( " << element.first.first << ", " << element.first.second << " ) = ";
-			std::cout << element.second[0] << std::endl;
-		}
-		else
-		{
-			std::cout << "delta ( " << element.first.first << ", " << element.first.second << " ) = {";
-			for (int i = 0; i < element.second.size(); i++)
-			{
-				if (i != (element.second.size() - 1))
-					std::cout << element.second[i] << ", ";
-				else
-					std::cout << element.second[i] << "}" << std::endl;
-			}
-		}
-	}
-}
-
 int Transitions::GetInNumberOfTransitions(std::string state)
 {
 	//the number of transitions that have the state as a result state
@@ -251,21 +198,11 @@ std::string Transitions::GetTransitionSymbol(std::string state1, std::string sta
 	return "";
 }
 
-
 Unordered_map Transitions::GetDeltaFunction()
 {
 	return m_delta;
 }
 
-std::vector<std::string> Transitions::GetUsedStates()
-{
-	return m_states;
-}
-
-std::string Transitions::GetUsedSymbols()
-{
-	return m_symbols;
-}
 
 bool Transitions::ExistsState(std::string state)
 {

@@ -6,27 +6,22 @@
 class NondeterministicFiniteAutomaton
 {
 public:
-	NondeterministicFiniteAutomaton();
-	NondeterministicFiniteAutomaton(std::vector<std::string> states, std::string alphabet, Transitions transitions, std::string initialState, std::vector<std::string> finalStates);
-	
-	void ReadNFA();
+	bool ReadNFA();
 	void PrintNFA();
 	
-	//create a new initial state
+public:
 	void AddNewInitialState();
-	//create a new final state
 	void AddNewFinalState();
+	
 	//get the first state with the lowest number of transitions
 	std::string getNextStateToDelete();
 
-	//remove a state and rewite the transitions
+	//remove a state and rewrite the transitions
 	void RemoveState(std::string stateToErase);
 
+public:
 	Transitions GetTransitions();
 	std::vector<std::string> GetStates();
-	std::string GetInitialState();
-	std::vector<std::string> GetFinalStates();
-	std::string GetAlphabet();
 
 private:
 	std::vector<std::string> m_states; //Q - multime finita nevida de stari = m_VN
