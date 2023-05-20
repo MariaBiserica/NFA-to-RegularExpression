@@ -27,11 +27,29 @@ public:
 	Transitions(Unordered_map delta, std::vector<std::string> states, std::string symbols);
 
 	void InsertTransition(std::string transitionState, std::string transitionSymbol, std::vector<std::string> transitionResultStates);
+	void UpdateTransitionSymbol(TransitionFunctionInputs transitionOldInputs, std::string transitionFinalState, std::string newTransitionSymbol);
+	void DeleteTransition(TransitionFunctionInputs transitionInputs, std::string transitionFinalState);
+
 	bool ExistsTransition(std::string transitionState, std::string transitionSymbol);
+	bool ExistsTransitionBetweenStates(std::string inState, std::string outState);
 	std::vector<std::string> GetTransitionResultStates(std::string transitionState, std::string transitionSymbol);
 	std::vector<std::string> GetTransitionResultStates(LambdaClosure lambdaClosure, std::string transitionSymbol);
 	LambdaClosure GetLambdaClosure(std::string state);
 	void PrintTransitions();
+
+	//function to get the number of transitions that have a given state as a result
+	int GetInNumberOfTransitions(std::string state);
+	//function to get the number of transitions that have a given state as a start
+	int GetOutNumberOfTransitions(std::string state);
+
+	//vector of strings that contains the states that have a given state as a result
+	std::vector<std::string> GetInTransitions(std::string state);
+
+	//vector of strings that contains the states that have a given state as a start
+	std::vector<std::string> GetOutTransitions(std::string state);
+
+	std::string GetTransitionSymbol(std::string state1, std::string state2);
+
 
 public:
 	Unordered_map GetDeltaFunction();
@@ -48,4 +66,3 @@ private:
 	//std::string m_states;
 	std::string m_symbols;
 };
-
