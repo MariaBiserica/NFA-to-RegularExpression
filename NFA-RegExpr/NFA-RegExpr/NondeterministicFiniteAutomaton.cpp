@@ -60,10 +60,24 @@ bool NondeterministicFiniteAutomaton::ReadNFA()
             transition.push_back(line);
 
             std::string transitionState = transition[0];
-            std::string transitionLetter = transition[1];
+            
+            std::string transitionLabel = transition[1];
+            
+            // check if the transition label contains ',' and replace it with '+'
+            pos = transitionLabel.find(',');
+			if (pos != std::string::npos)
+			{
+                while (pos != std::string::npos) {
+                    transitionLabel[pos] = '+';
+                    // find the next occurrence of the old character
+                    pos = transitionLabel.find(',', pos + 1);
+                }
+				transitionLabel = "(" + transitionLabel + ")";
+			}
+            
             std::vector<std::string> transitionResult;
             transitionResult.push_back(transition[2]);
-            m_transitions.InsertTransition(transitionState, transitionLetter, transitionResult);
+            m_transitions.InsertTransition(transitionState, transitionLabel, transitionResult);
         }
 
     }
@@ -178,7 +192,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
             if (m_transitions.ExistsTransitionBetweenStates(inTransitions[i], outTransitions[o]))
             {
 				//if there is, we eliminate the transition through the state to be deleted and update the direct transition
-				//we will add to the symbol of the direct transition: "|" + "the symbol of the intermediate transition through the state to be deleted"
+				//we will add to the symbol of the direct transition: "+" and "the symbol of the intermediate transition through the state to be deleted"
 				//we want to concatenate the symbols of the "transitions through the state to be deleted"
 
 				//get the symbol of the direct transition
@@ -187,7 +201,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				//update the symbol of the direct transition, depending on the case
 				if (inSymbol != "E" && outSymbol != "E" && directSymbol != "E")
 				{
-					newTransitionSymbol = inSymbol + outSymbol + "|" + directSymbol;
+					newTransitionSymbol = inSymbol + outSymbol + "+" + directSymbol;
 				}
                 else if (inSymbol != "E" && outSymbol != "E" && directSymbol == "E")
                 {
@@ -195,11 +209,11 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				}
 				else if (inSymbol != "E" && outSymbol == "E" && directSymbol != "E")
 				{
-					newTransitionSymbol = inSymbol + "|" + directSymbol;
+					newTransitionSymbol = inSymbol + "+" + directSymbol;
 				}
 				else if (inSymbol == "E" && outSymbol != "E" && directSymbol != "E")
 				{
-					newTransitionSymbol = outSymbol + "|" + directSymbol;
+					newTransitionSymbol = outSymbol + "+" + directSymbol;
 				}
 				else if (inSymbol != "E" && outSymbol == "E" && directSymbol == "E")
 				{
@@ -276,11 +290,11 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 					//let's check the symbols of the transitions
                     if (inSymbol != "E" && outSymbol != "E")
                     {
-						if (inSymbol.find('|') != std::string::npos)
+						if (inSymbol.find('+') != std::string::npos)
 						{
 							newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
 						}
-						else if (outSymbol.find('|') != std::string::npos)
+						else if (outSymbol.find('+') != std::string::npos)
 						{
 							newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
 						}

@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="inputNFA.txt" />
+    <Text Include="inputNFA2.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
