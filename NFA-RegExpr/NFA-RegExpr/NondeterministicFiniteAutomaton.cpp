@@ -3,7 +3,7 @@
 
 bool NondeterministicFiniteAutomaton::ReadNFA()
 {
-    std::ifstream fin("inputNFA.txt");
+    std::ifstream fin("inputNFA2.txt");
     if (!fin.is_open())
     {
         std::cout << "Error opening file!" << std::endl;
@@ -131,6 +131,13 @@ void NondeterministicFiniteAutomaton::AddNewInitialState()
     std::vector<std::string> trnsitionResult;
     trnsitionResult.push_back(m_initialState);
     m_transitions.InsertTransition(newInitialState, "E", trnsitionResult);
+    
+    //check if 'E' exists in the alphabet, if not add it
+    if (m_alphabet.find('E') == std::string::npos)
+    {
+        m_alphabet += "E";
+    }
+    
     //delete the old initial state
     m_initialState = newInitialState;
 }
@@ -140,6 +147,7 @@ void NondeterministicFiniteAutomaton::AddNewFinalState()
     //create a new final state and add a new transition from all the old final states to the new final state, update the old final states
     std::string newFinalState = "F";
     m_states.push_back(newFinalState);
+    
     //add a new transition from all the old final states to the new final state
     for (int i = 0; i < m_finalStates.size(); i++)
     {
@@ -147,6 +155,13 @@ void NondeterministicFiniteAutomaton::AddNewFinalState()
         trnsitionResult.push_back(newFinalState);
         m_transitions.InsertTransition(m_finalStates[i], "E", trnsitionResult);
     }
+    
+    //check if 'E' exists in the alphabet, if not add it
+	if (m_alphabet.find('E') == std::string::npos)
+	{
+		m_alphabet += "E";
+	}
+    
     //delete the old final states
     m_finalStates.clear();
     m_finalStates.push_back(newFinalState);
