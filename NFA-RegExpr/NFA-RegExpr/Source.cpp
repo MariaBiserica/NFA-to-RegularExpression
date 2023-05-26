@@ -27,7 +27,7 @@ TEXT COLORS
 int main()
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	
+
 	// Checking if the read automaton is constructed correctly
 	NondeterministicFiniteAutomaton NFA;
 	if (NFA.ReadNFA())
@@ -43,6 +43,18 @@ int main()
 		NFA.AddNewFinalState();
 		NFA.PrintNFA();
 		std::cout << std::endl << std::endl;
+
+		//for all states print the in and out transitions
+		for (const auto& state : NFA.GetStates())
+		{
+			SetConsoleTextAttribute(hConsole, 9);
+			std::cout << "State: " << state << std::endl;
+			SetConsoleTextAttribute(hConsole, 7);
+			NFA.GetTransitions().GetInTransitions(state);
+			NFA.GetTransitions().GetOutTransitions(state);
+			std::cout << "--------------------------------------------------------------" << std::endl;
+		}
+
 
 		// Step 2. Reducing the states with the fewest transitions until only the initial and final state remain
 		SetConsoleTextAttribute(hConsole, 11);

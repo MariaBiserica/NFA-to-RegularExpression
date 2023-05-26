@@ -1,0 +1,10 @@
+q1,q2,q3
+ab
+q1
+q3
+q1-a-q1
+q1-a-q2
+q2-b-q1
+q2-b-q2
+q2-a-q3
+q3-b-q2

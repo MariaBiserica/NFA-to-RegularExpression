@@ -23,7 +23,7 @@ class Transitions
 {
 public:
 	void PrintTransitions();
-	
+
 	void InsertTransition(std::string transitionState, std::string transitionSymbol, std::vector<std::string> transitionResultStates);
 	void UpdateTransitionSymbol(TransitionFunctionInputs transitionOldInputs, std::string transitionFinalState, std::string newTransitionSymbol);
 	void DeleteTransition(TransitionFunctionInputs transitionInputs, std::string transitionFinalState);
@@ -32,13 +32,15 @@ public:
 	bool ExistsTransition(std::string transitionState, std::string transitionSymbol);
 	bool ExistsTransitionBetweenStates(std::string inState, std::string outState);
 
+	std::vector<std::string> GetTransitionsBetweenStates(std::string inState, std::string outState);
+
 	int GetInNumberOfTransitions(std::string state);
 	int GetOutNumberOfTransitions(std::string state);
 	std::vector<std::string> GetInTransitions(std::string state);
 	std::vector<std::string> GetOutTransitions(std::string state);
 
 	std::string GetTransitionSymbol(std::string state1, std::string state2);
-	
+
 	Unordered_map GetDeltaFunction();
 
 private:

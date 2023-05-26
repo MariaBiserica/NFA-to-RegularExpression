@@ -94,9 +94,7 @@ void Transitions::DeleteTransition(TransitionFunctionInputs transitionInputs, st
 
 			// If the transition result states vector is empty, remove the entire transition from the map
 			if (transitionOut.empty())
-			{
 				m_delta.erase(transitionInputs);
-			}
 		}
 	}
 }
@@ -119,13 +117,25 @@ bool Transitions::ExistsTransition(std::string transitionState, std::string tran
 }
 
 bool Transitions::ExistsTransitionBetweenStates(std::string inState, std::string outState)
-{	
+{
 	for (auto& transition : m_delta)
 	{
 		if (transition.first.first == inState && std::find(transition.second.begin(), transition.second.end(), outState) != transition.second.end())
 			return true;
 	}
 	return false;
+}
+
+std::vector<std::string> Transitions::GetTransitionsBetweenStates(std::string inState, std::string outState)
+{
+	//for the given states, return the symbols that have the inState as a start state and the outState as a result state
+	std::vector<std::string> transitions;
+	for (auto& transition : m_delta)
+	{
+		if (transition.first.first == inState && std::find(transition.second.begin(), transition.second.end(), outState) != transition.second.end())
+			transitions.push_back(transition.first.second);
+	}
+	return transitions;
 }
 
 int Transitions::GetInNumberOfTransitions(std::string state)
@@ -150,10 +160,11 @@ int Transitions::GetOutNumberOfTransitions(std::string state)
 
 	int outNumberOfTransitions = 0;
 	for (const auto& element : m_delta)
-	{
-		if (element.first.first == state && element.second[0] != state)
-			outNumberOfTransitions++;
-	}
+		if (element.first.first == state)
+			for (const auto& s : element.second)
+				if (s != state)
+					outNumberOfTransitions++;
+
 	return outNumberOfTransitions;
 }
 
@@ -169,7 +180,7 @@ std::vector<std::string> Transitions::GetInTransitions(std::string state)
 			if (s == state && element.first.first != state)
 				inTransitions.push_back(element.first.first);
 	}
-	
+
 	//print the result states
 	SetConsoleTextAttribute(hConsole, 9);
 	std::cout << "IN: ";
@@ -185,14 +196,40 @@ std::vector<std::string> Transitions::GetOutTransitions(std::string state)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	//vector of strings that contains the result states of the transitions that have the state as a start state
-	//dont count the transtions that have the state as a result state
+	//dont count the transtions that have the state as a result state, a state cand have multiple transitions with the same symbol to other states
 	std::vector<std::string> outTransitions;
+	//	for (const auto& element : m_delta)
+	//	{
+	////a state cand have with the same symbol multiple transitions to other states
+	//		if (element.first.first == state && element.second[0] != state)
+	//		{
+	//			bool found = false;
+	//			for (const auto& s : outTransitions)
+	//				if (s == element.second[0])
+	//					found = true;
+	//			if (!found)
+	//				outTransitions.push_back(element.second[0]);
+	//		}
+	//	}
+
+	//get all the result states of the transitions that have the state as a start state
 	for (const auto& element : m_delta)
 	{
-		if (element.first.first == state && element.second[0] != state)
-			outTransitions.push_back(element.second[0]);
+		//with the same symbol one state can go to itself or to other states. get all of the result states
+		if (element.first.first == state)
+		{
+			for (const auto& s : element.second)
+			{
+				//get the states that are not the start state
+				if (s != state)
+				{
+					outTransitions.push_back(s);
+				}
+
+			}
+		}
 	}
-	
+
 	//print the start states
 	SetConsoleTextAttribute(hConsole, 9);
 	std::cout << "OUT:";
@@ -208,10 +245,11 @@ std::string Transitions::GetTransitionSymbol(std::string state1, std::string sta
 {
 	//get the symbol of the transition from state1 to state2
 	for (const auto& element : m_delta)
-	{
-		if (element.first.first == state1 && element.second[0] == state2)
-			return element.first.second;
-	}
+		if (element.first.first == state1)
+			for (int i = 0; i < element.second.size(); i++)
+				if (element.second[i] == state2)
+					return element.first.second;
+
 	return "";
 }
 

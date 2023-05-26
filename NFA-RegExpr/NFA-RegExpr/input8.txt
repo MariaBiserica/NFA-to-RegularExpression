@@ -1,0 +1,11 @@
+q1,q2,q3,q4
+abE
+q1
+q4
+q1-a-q2
+q2-b-q1
+q3-a-q1
+q2-a-q3
+q2-E-q4
+q3-b-q4
+q4-a-q4

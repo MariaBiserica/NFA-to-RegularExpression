@@ -1,0 +1,7 @@
+q1,q2
+abE
+q1
+q1
+q1-a-q1
+q1-a,b-q2
+q2-b-q1

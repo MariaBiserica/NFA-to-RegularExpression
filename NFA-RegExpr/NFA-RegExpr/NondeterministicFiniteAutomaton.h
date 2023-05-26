@@ -8,11 +8,11 @@ class NondeterministicFiniteAutomaton
 public:
 	bool ReadNFA();
 	void PrintNFA();
-	
+
 public:
 	void AddNewInitialState();
 	void AddNewFinalState();
-	
+
 	//get the first state with the lowest number of transitions
 	std::string getNextStateToDelete();
 
