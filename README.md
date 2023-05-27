@@ -11,8 +11,6 @@ Command-Line Interface: The app operates through a command-line interface, makin
 
 Flexibility and Portability: Built on C++, the application offers platform independence, ensuring compatibility across different operating systems. Users can run the program on Windows, macOS, or Linux, providing flexibility and convenience for a wide range of developers.
 
-Detailed Documentation: The application includes comprehensive documentation, providing clear instructions on usage, input file format, and output representation. The documentation offers insightful explanations of the conversion process and assists users in understanding the generated Regex.
-
 Extensibility: The program's architecture is designed to facilitate future enhancements and extensions. Developers can easily modify and extend the codebase to incorporate additional features or customize the conversion process according to specific requirements.
 
 The NFA to Regular Expression Converter offers a robust solution for efficiently converting NFAs to Regex representations. With its straightforward command-line interface and compatibility with different operating systems, the application empowers developers and researchers in various domains to seamlessly integrate regular expressions into their projects and analyses.
