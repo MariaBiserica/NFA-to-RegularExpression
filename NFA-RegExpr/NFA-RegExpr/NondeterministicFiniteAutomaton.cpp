@@ -4,7 +4,7 @@
 
 bool NondeterministicFiniteAutomaton::ReadNFA()
 {
-	std::ifstream fin("input6.txt");
+	std::ifstream fin("input9.txt");
 	if (!fin.is_open())
 	{
 		std::cout << "Error opening file!" << std::endl;
@@ -73,7 +73,7 @@ bool NondeterministicFiniteAutomaton::ReadNFA()
 					// find the next occurrence of the old character
 					pos = transitionLabel.find(',', pos + 1);
 				}
-				transitionLabel = "(" + transitionLabel + ")";
+				//transitionLabel = "(" + transitionLabel + ")";
 			}
 
 			std::vector<std::string> transitionResult;
@@ -336,7 +336,6 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				{
 					//if there is, we will add the symbol of the transition to the direct transition
 					std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
-					std::cout << "loopsymb: " << loopSymbol << std::endl;
 
 					//let's check the symbols of the transitions
 					if (loopSymbol != "E")
@@ -344,36 +343,99 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 						if (loopSymbol.size() > 1 && (loopSymbol[0] != '(' || loopSymbol[loopSymbol.size()-1] != ')') )
 						{
 							if (inSymbol != "E" && outSymbol != "E")
-								newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*(" + outSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*" + outSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*(" + outSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+							}
 							else if (inSymbol != "E" && outSymbol == "E")
-								newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*";
+							{
+								if (NeedsParenthesis(inSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*";
+								else
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*";
+							}
 							else if (inSymbol == "E" && outSymbol != "E")
-								newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol;
+							{
+								if (NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*(" + outSymbol + ")";
+								else
+									newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol;
+							}
 							else if (inSymbol == "E" && outSymbol == "E")
 								newTransitionSymbol = "(" + loopSymbol + ")*";
 						}
 						else
 						{
 							if (inSymbol != "E" && outSymbol != "E")
-								newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*(" + outSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*" + outSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*(" + outSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+							}
 							else if (inSymbol != "E" && outSymbol == "E")
-								newTransitionSymbol = inSymbol + loopSymbol + "*";
+							{
+								if (NeedsParenthesis(inSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*";
+								else
+									newTransitionSymbol = inSymbol + loopSymbol + "*";
+							}
 							else if (inSymbol == "E" && outSymbol != "E")
-								newTransitionSymbol = loopSymbol + "*" + outSymbol;
-							else if (inSymbol == "E" && outSymbol == "E")
-								newTransitionSymbol = loopSymbol + "*";
+							{
+								if (NeedsParenthesis(outSymbol))
+									newTransitionSymbol = loopSymbol + "*(" + outSymbol + ")";
+								else
+									newTransitionSymbol = loopSymbol + "*" + outSymbol;
+							}
 						}
 					}
 					else
 					{
 						if (inSymbol != "E" && outSymbol != "E")
-							newTransitionSymbol = inSymbol + outSymbol;
+						{
+							if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")(" + outSymbol + ")";
+							else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
+							else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+								newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
+							else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+								newTransitionSymbol = inSymbol + outSymbol;
+						}
 						else if (inSymbol != "E" && outSymbol == "E")
+						{
+							if (NeedsParenthesis(inSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")";
+							else
+								newTransitionSymbol = inSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol != "E")
+						{
+							if (NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + outSymbol + ")";
+							else
+								newTransitionSymbol = outSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol == "E")
+							newTransitionSymbol = "E";
+							
+							//newTransitionSymbol = inSymbol + outSymbol;
+						/*else if (inSymbol != "E" && outSymbol == "E")
 							newTransitionSymbol = inSymbol;
 						else if (inSymbol == "E" && outSymbol != "E")
 							newTransitionSymbol = outSymbol;
 						else if (inSymbol == "E" && outSymbol == "E")
-							newTransitionSymbol = "E";
+							newTransitionSymbol = "E";*/
 					}
 				}
 				else
@@ -382,19 +444,38 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 					//let's check the symbols of the transitions
 					if (inSymbol != "E" && outSymbol != "E")
 					{
-						if (inSymbol.find('+') != std::string::npos && inSymbol[0] != '(' && inSymbol[inSymbol.size()-1] != ')')
+						if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+							newTransitionSymbol = "(" + inSymbol + ")(" + outSymbol + ")";
+						else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
 							newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
-						else if (outSymbol.find('+') != std::string::npos && outSymbol[0] != '(' && outSymbol[outSymbol.size() - 1] != ')')
+						else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
 							newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
-						else
+						else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
 							newTransitionSymbol = inSymbol + outSymbol;
 					}
 					else if (inSymbol != "E" && outSymbol == "E")
+					{
+						if (NeedsParenthesis(inSymbol))
+							newTransitionSymbol = "(" + inSymbol + ")";
+						else
+							newTransitionSymbol = inSymbol;
+					}
+					else if (inSymbol == "E" && outSymbol != "E")
+					{
+						if (NeedsParenthesis(outSymbol))
+							newTransitionSymbol = "(" + outSymbol + ")";
+						else
+							newTransitionSymbol = outSymbol;
+					}
+					else if (inSymbol == "E" && outSymbol == "E")
+						newTransitionSymbol = "E";
+					
+					/*else if (inSymbol != "E" && outSymbol == "E")
 						newTransitionSymbol = inSymbol;
 					else if (inSymbol == "E" && outSymbol != "E")
 						newTransitionSymbol = outSymbol;
 					else
-						newTransitionSymbol = "E";
+						newTransitionSymbol = "E";*/
 				}
 
 				m_transitions.InsertTransition(inTransitions[i], newTransitionSymbol, { outTransitions[o] });
@@ -445,4 +526,11 @@ Transitions NondeterministicFiniteAutomaton::GetTransitions()
 std::vector<std::string> NondeterministicFiniteAutomaton::GetStates()
 {
 	return m_states;
+}
+
+bool NondeterministicFiniteAutomaton::NeedsParenthesis(std::string transitionSymbol)
+{
+	if (transitionSymbol.find('+') != std::string::npos && transitionSymbol[0] != '(')
+		return true;
+	return false;
 }

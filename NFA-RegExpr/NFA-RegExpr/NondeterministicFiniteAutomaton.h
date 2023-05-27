@@ -24,6 +24,9 @@ public:
 	std::vector<std::string> GetStates();
 
 private:
+	bool NeedsParenthesis(std::string transitionSymbol);
+	
+private:
 	std::vector<std::string> m_states; //Q - finite non-empty set of states = m_VN
 	std::string m_alphabet; //sigma - input symbols / input alphabet = m_VT
 	std::string m_initialState; //q0 - initial state = m_S
