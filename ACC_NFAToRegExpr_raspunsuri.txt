@@ -1,0 +1,11 @@
+input 1: a((aa+b)a)*aba*
+input 2: b(ab+b)*(a+b)b*
+input 3: (a+b)*a(a+b)b
+input 4: a*b(aa*b+b)*
+input 5: aa*
+input 6: (a*a(ba*a+b)*a)(b(ba*a+b)*a)*
+input 7: (ab*a+b)(a+b)*
+input 8: a((aa+b)a)*aba*
+input 9: E
+input 10: b*a(ab*a+b)*ab*
+input 11: ((a+b)b+a)*
