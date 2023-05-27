@@ -4,7 +4,7 @@
 
 bool NondeterministicFiniteAutomaton::ReadNFA()
 {
-	std::ifstream fin("input9.txt");
+	std::ifstream fin("input11.txt");
 	if (!fin.is_open())
 	{
 		std::cout << "Error opening file!" << std::endl;
@@ -200,35 +200,28 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 	{
 		for (int o = 0; o < outTransitions.size(); o++)
 		{
-
 			std::vector<std::string> INSymbolsTwoLetters;
 			//get all the transitions from the IN state to the state to be deleted
 			INSymbolsTwoLetters = m_transitions.GetTransitionsBetweenStates(inTransitions[i], stateToErase);
 			//concatenate the symbols of the transitions from the IN state to the state to be deleted
 			std::string inSymbol = "";
 			if (INSymbolsTwoLetters.size() > 1)
-			{
 				inSymbol = "(" + INSymbolsTwoLetters[0] + "+" + INSymbolsTwoLetters[1] + ")";
-			}
 			else
-			{
 				inSymbol = INSymbolsTwoLetters[0];
-			}
 
+			
 			//get all the transitions from the state to be deleted to the OUT state
 			std::vector<std::string> OUTSymbolsTwoLetters;
 			OUTSymbolsTwoLetters = m_transitions.GetTransitionsBetweenStates(stateToErase, outTransitions[o]);
 			//concatenate the symbols of the transitions from the state to be deleted to the OUT state
 			std::string outSymbol = "";
 			if (OUTSymbolsTwoLetters.size() > 1)
-			{
 				outSymbol = "(" + OUTSymbolsTwoLetters[0] + "+" + OUTSymbolsTwoLetters[1] + ")";
-			}
 			else
-			{
 				outSymbol = OUTSymbolsTwoLetters[0];
-			}
 
+			
 			std::string newTransitionSymbol = "";
 
 			//check if there is a direct transition from the IN state to the OUT state
@@ -242,23 +235,14 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				//through the state to be deleted
 				std::vector<std::string> directTransitions = m_transitions.GetTransitionsBetweenStates(inTransitions[i], outTransitions[o]);
 
-
 				//get the symbol of the direct transition by combining the symbols in the directTransitions vector (if there are more direct transitions)
 				std::string directSymbol = "";
-
 				if (directTransitions.size() > 1)
-				{
-
 					directSymbol = "(" + directTransitions[0] + directTransitions[1] + ")";
-				}
-				else
-				{
+				else if (directTransitions.size() != 0)
 					directSymbol = directTransitions[0];
-				}
 
-
-				//pentru simbolul prin starea de sters putem avea loop la starea de sters, trebuie verificat si concatenat si el in caz afirmativ
-
+				//for the symbol through the deleted state we can have loop to the deleted state, it must be checked and concatenated in case of affirmative
 				std::string loopSymbol = "";
 				loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
 
@@ -266,68 +250,269 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				if (loopSymbol != "")
 				{
 					//let's check the symbols of the transitions
-					if (inSymbol != "E" && loopSymbol != "E" && outSymbol != "E" && directSymbol != "E")
+					if (loopSymbol.size() > 1)
 					{
-						if (loopSymbol.size() > 1)
+						if (directSymbol != "E")
 						{
-							newTransitionSymbol = "((" + inSymbol + "(" + loopSymbol + ")*" + outSymbol + ")" + "+" + directSymbol + ")";
+							if (inSymbol != "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*(" + outSymbol + ")+" + directSymbol;
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*" + outSymbol + "+(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*" + outSymbol + "+" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*(" + outSymbol + ")+" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol + "+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol + "+" + directSymbol;
+							}
+							else if (inSymbol != "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*+(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*+" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*+" + directSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*(" + outSymbol + ")+" + directSymbol;
+								else if (!NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol + "+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol + "+" + directSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*+(" + directSymbol + ")";
+								else
+									newTransitionSymbol = "(" + loopSymbol + ")*+" + directSymbol;
+							}
 						}
-						else
+						else // direct symbol is "E" or null
 						{
-							newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol + "+" + directSymbol;
+							if (inSymbol != "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*(" + outSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*" + outSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*(" + outSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+							}
+							else if (inSymbol != "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(inSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")(" + loopSymbol + ")*";
+								else
+									newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*";
+							}
+							else if (inSymbol == "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + loopSymbol + ")*(" + outSymbol + ")";
+								else
+									newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol == "E")
+							{
+								newTransitionSymbol = "(" + loopSymbol + ")*";
+							}
 						}
 					}
-					//for else case we get all the combinations of a symbol being E or not
-					else
+					else if (loopSymbol.size() == 1)
 					{
-						newTransitionSymbol = "((" + inSymbol + loopSymbol + "*" + outSymbol + ")" + "+" + directSymbol + ")";
-						if (newTransitionSymbol.find("E") != std::string::npos)
+						if (directSymbol != "E")
 						{
-							newTransitionSymbol.erase(std::remove(newTransitionSymbol.begin(), newTransitionSymbol.end(), 'E'), newTransitionSymbol.end());
+							if (inSymbol != "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*(" + outSymbol + ")+" + directSymbol;
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*" + outSymbol + "+(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*" + outSymbol + "+" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*(" + outSymbol + ")+" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol + "+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol + "+" + directSymbol;
+							}
+							else if (inSymbol != "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*(" + directSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*" + directSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*(" + directSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*" + directSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = loopSymbol + "*(" + outSymbol + ")+(" + directSymbol + ")";
+								else if (NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = loopSymbol + "*(" + outSymbol + ")+" + directSymbol;
+								else if (!NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+									newTransitionSymbol = loopSymbol + "*" + outSymbol + "+(" + directSymbol + ")";
+								else if (!NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+									newTransitionSymbol = loopSymbol + "*" + outSymbol + "+" + directSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(directSymbol))
+									newTransitionSymbol = loopSymbol + "+(" + directSymbol + ")";
+								else
+									newTransitionSymbol = loopSymbol + "+" + directSymbol;
+							}
 						}
-						//trebuie tratate toate cazurile in care simbolul e E, pentru ca poate fi un caz de forma ceva + E + ceva de unde trebuie eliminat E si simbolul +
-						//iar in codul de mai sus nu se elimina decat E. la fel se observa in input10
+						else //direct symbol is "E" or null
+						{
+							if (inSymbol != "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*(" + outSymbol + ")";
+								else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*" + outSymbol;
+								else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*(" + outSymbol + ")";
+								else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+									newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+							}
+							else if (inSymbol != "E" && outSymbol == "E")
+							{
+								if (NeedsParenthesis(inSymbol))
+									newTransitionSymbol = "(" + inSymbol + ")" + loopSymbol + "*";
+								else
+									newTransitionSymbol = inSymbol + loopSymbol + "*";
+							}
+							else if (inSymbol == "E" && outSymbol != "E")
+							{
+								if (NeedsParenthesis(outSymbol))
+									newTransitionSymbol = loopSymbol + "*(" + outSymbol + ")";
+								else
+									newTransitionSymbol = loopSymbol + "*" + outSymbol;
+							}
+							else if (inSymbol == "E" && outSymbol == "E")
+							{
+								newTransitionSymbol = loopSymbol + "*";
+							}
+						}
 					}
-
-
 				}
-				else
-
-					if (inSymbol != "E" && outSymbol != "E" && directSymbol != "E")
+				else //loop symbol is "E" or null
+				{
+					if (directSymbol != "E")
 					{
-						newTransitionSymbol = inSymbol + outSymbol + "+" + directSymbol;
+						if (inSymbol != "E" && outSymbol != "E")
+						{
+							if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")(" + outSymbol + ")+(" + directSymbol + ")";
+							else if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")(" + outSymbol + ")+" + directSymbol;
+							else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")" + outSymbol + "+(" + directSymbol + ")";
+							else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")" + outSymbol + "+" + directSymbol;
+							else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + "(" + outSymbol + ")+(" + directSymbol + ")";
+							else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + "(" + outSymbol + ")+" + directSymbol;
+							else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + outSymbol + "+(" + directSymbol + ")";
+							else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + outSymbol + "+" + directSymbol;
+						}
+						else if (inSymbol != "E" && outSymbol == "E")
+						{
+							if (NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")+(" + directSymbol + ")";
+							else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")+" + directSymbol;
+							else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + "+(" + directSymbol + ")";
+							else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = inSymbol + "+" + directSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol != "E")
+						{
+							if (NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + outSymbol + ")+(" + directSymbol + ")";
+							else if (NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + outSymbol + ")+" + directSymbol;
+							else if (!NeedsParenthesis(outSymbol) && NeedsParenthesis(directSymbol))
+								newTransitionSymbol = outSymbol + "+(" + directSymbol + ")";
+							else if (!NeedsParenthesis(outSymbol) && !NeedsParenthesis(directSymbol))
+								newTransitionSymbol = outSymbol + "+" + directSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol == "E")
+						{
+							if (NeedsParenthesis(directSymbol))
+								newTransitionSymbol = "(" + directSymbol + ")";
+							else
+								newTransitionSymbol = directSymbol;
+						}
 					}
-					else if (inSymbol != "E" && outSymbol != "E" && directSymbol == "E")
+					else //direct symbol is "E" or null
 					{
-						newTransitionSymbol = inSymbol + outSymbol;
+						if (inSymbol != "E" && outSymbol != "E")
+						{
+							if (NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")(" + outSymbol + ")";
+							else if (NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
+							else if (!NeedsParenthesis(inSymbol) && NeedsParenthesis(outSymbol))
+								newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
+							else if (!NeedsParenthesis(inSymbol) && !NeedsParenthesis(outSymbol))
+								newTransitionSymbol = inSymbol + outSymbol;
+						}
+						else if (inSymbol != "E" && outSymbol == "E")
+						{
+							if (NeedsParenthesis(inSymbol))
+								newTransitionSymbol = "(" + inSymbol + ")";
+							else
+								newTransitionSymbol = inSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol != "E")
+						{
+							if (NeedsParenthesis(outSymbol))
+								newTransitionSymbol = "(" + outSymbol + ")";
+							else
+								newTransitionSymbol = outSymbol;
+						}
+						else if (inSymbol == "E" && outSymbol == "E")
+						{
+							newTransitionSymbol = "E";
+						}
 					}
-					else if (inSymbol != "E" && outSymbol == "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = inSymbol + "+" + directSymbol;
-					}
-					else if (inSymbol == "E" && outSymbol != "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = outSymbol + "+" + directSymbol;
-					}
-					else if (inSymbol != "E" && outSymbol == "E" && directSymbol == "E")
-					{
-						newTransitionSymbol = inSymbol;
-					}
-					else if (inSymbol == "E" && outSymbol != "E" && directSymbol == "E")
-					{
-						newTransitionSymbol = outSymbol;
-					}
-					else if (inSymbol == "E" && outSymbol == "E" && directSymbol != "E")
-					{
-						newTransitionSymbol = directSymbol;
-					}
-					else
-					{
-						newTransitionSymbol = "E";
-					}
+				}
 
 				m_transitions.UpdateTransitionSymbol(std::make_pair(inTransitions[i], directSymbol), outTransitions[o], newTransitionSymbol);
-			}
+					
+			} //----------------------------------------------------------------------------------------------------------------------------------
 			else
 			{
 				//if there's no direct transition, we will create one 
@@ -370,7 +555,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 							else if (inSymbol == "E" && outSymbol == "E")
 								newTransitionSymbol = "(" + loopSymbol + ")*";
 						}
-						else
+						else if (loopSymbol.size() == 1)
 						{
 							if (inSymbol != "E" && outSymbol != "E")
 							{
@@ -399,7 +584,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 							}
 						}
 					}
-					else
+					else //loopSymbol is "E" or null
 					{
 						if (inSymbol != "E" && outSymbol != "E")
 						{
@@ -428,14 +613,6 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 						}
 						else if (inSymbol == "E" && outSymbol == "E")
 							newTransitionSymbol = "E";
-							
-							//newTransitionSymbol = inSymbol + outSymbol;
-						/*else if (inSymbol != "E" && outSymbol == "E")
-							newTransitionSymbol = inSymbol;
-						else if (inSymbol == "E" && outSymbol != "E")
-							newTransitionSymbol = outSymbol;
-						else if (inSymbol == "E" && outSymbol == "E")
-							newTransitionSymbol = "E";*/
 					}
 				}
 				else
@@ -469,13 +646,6 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 					}
 					else if (inSymbol == "E" && outSymbol == "E")
 						newTransitionSymbol = "E";
-					
-					/*else if (inSymbol != "E" && outSymbol == "E")
-						newTransitionSymbol = inSymbol;
-					else if (inSymbol == "E" && outSymbol != "E")
-						newTransitionSymbol = outSymbol;
-					else
-						newTransitionSymbol = "E";*/
 				}
 
 				m_transitions.InsertTransition(inTransitions[i], newTransitionSymbol, { outTransitions[o] });
@@ -486,27 +656,24 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 	//erase the transitions through the state to be deleted
 	for (int i = 0; i < inTransitions.size(); i++)
 	{
-		for (int o = 0; o < outTransitions.size(); o++)
-		{
-			std::string inSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], stateToErase);
-			std::string backIn = m_transitions.GetTransitionSymbol(stateToErase, inTransitions[i]);
-			
-			std::string outSymbol = m_transitions.GetTransitionSymbol(stateToErase, outTransitions[o]);
-			std::string backOut = m_transitions.GetTransitionSymbol(outTransitions[o], stateToErase);
+		std::string inSymbol = m_transitions.GetTransitionSymbol(inTransitions[i], stateToErase);
+		std::string backIn = m_transitions.GetTransitionSymbol(stateToErase, inTransitions[i]);
 
-			std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
-			
-			m_transitions.DeleteTransition(std::make_pair(inTransitions[i], inSymbol), stateToErase);
-			m_transitions.DeleteTransition(std::make_pair(stateToErase, backIn), inTransitions[i]);
-			
-			m_transitions.DeleteTransition(std::make_pair(stateToErase, outSymbol), outTransitions[o]);
-			m_transitions.DeleteTransition(std::make_pair(outTransitions[o], backOut), stateToErase);
-			
-			m_transitions.DeleteTransition(std::make_pair(stateToErase, loopSymbol), stateToErase);
-		}
+		m_transitions.DeleteTransition(std::make_pair(inTransitions[i], inSymbol), stateToErase);
+		m_transitions.DeleteTransition(std::make_pair(stateToErase, backIn), inTransitions[i]);
 	}
 
-	//verificare si stergere in cazul in care nu sunt inTransitions/outTransitions pt input10 se vede clar 
+	for (int o = 0; o < outTransitions.size(); o++)
+	{
+		std::string outSymbol = m_transitions.GetTransitionSymbol(stateToErase, outTransitions[o]);
+		std::string backOut = m_transitions.GetTransitionSymbol(outTransitions[o], stateToErase);
+
+		m_transitions.DeleteTransition(std::make_pair(stateToErase, outSymbol), outTransitions[o]);
+		m_transitions.DeleteTransition(std::make_pair(outTransitions[o], backOut), stateToErase);
+	}
+
+	std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
+	m_transitions.DeleteTransition(std::make_pair(stateToErase, loopSymbol), stateToErase);
 
 	//erase the state to be deleted from m_states
 	m_states.erase(std::remove(m_states.begin(), m_states.end(), stateToErase), m_states.end());
