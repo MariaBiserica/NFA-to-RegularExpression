@@ -68,8 +68,12 @@ void Transitions::UpdateTransitionSymbol(TransitionFunctionInputs transitionOldI
 				if (state == transitionFinalState)
 				{
 					// Replace the existing pair in the map with the new pair
-					InsertTransition(it->first.first, newTransitionSymbol, it->second);
+					std::string newInputState = it->first.first;
+					std::vector<std::string> newOutStates = it->second;
+
 					m_delta.erase(it);
+
+					InsertTransition(newInputState, newTransitionSymbol, newOutStates);
 					break;
 				}
 			}
@@ -79,6 +83,8 @@ void Transitions::UpdateTransitionSymbol(TransitionFunctionInputs transitionOldI
 
 void Transitions::DeleteTransition(TransitionFunctionInputs transitionInputs, std::string transitionFinalState)
 {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	// Check if the transition exists
 	if (ExistsTransition(transitionInputs.first, transitionInputs.second))
 	{
@@ -89,6 +95,10 @@ void Transitions::DeleteTransition(TransitionFunctionInputs transitionInputs, st
 		auto it = std::find(transitionOut.begin(), transitionOut.end(), transitionFinalState);
 		if (it != transitionOut.end())
 		{
+			SetConsoleTextAttribute(hConsole, 13);
+			std::cout << "Delete: (" << transitionInputs.first << ", " << transitionInputs.second << ") -> " << *it << std::endl;
+			SetConsoleTextAttribute(hConsole, 7);
+
 			// Erase the transition result state
 			transitionOut.erase(it);
 
