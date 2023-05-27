@@ -4,7 +4,7 @@
 
 bool NondeterministicFiniteAutomaton::ReadNFA()
 {
-	std::ifstream fin("input8.txt");
+	std::ifstream fin("input6.txt");
 	if (!fin.is_open())
 	{
 		std::cout << "Error opening file!" << std::endl;
@@ -274,7 +274,7 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 						}
 						else
 						{
-							newTransitionSymbol = "(" + inSymbol + loopSymbol + "*" + outSymbol + "+" + directSymbol + ")";
+							newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol + "+" + directSymbol;
 						}
 					}
 					//for else case we get all the combinations of a symbol being E or not
@@ -336,46 +336,44 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 				{
 					//if there is, we will add the symbol of the transition to the direct transition
 					std::string loopSymbol = m_transitions.GetTransitionSymbol(stateToErase, stateToErase);
+					std::cout << "loopsymb: " << loopSymbol << std::endl;
 
 					//let's check the symbols of the transitions
-					if (inSymbol != "E" && loopSymbol != "E" && outSymbol != "E")
+					if (loopSymbol != "E")
 					{
-						if (loopSymbol.size() > 1)
+						if (loopSymbol.size() > 1 && (loopSymbol[0] != '(' || loopSymbol[loopSymbol.size()-1] != ')') )
 						{
-							newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+							if (inSymbol != "E" && outSymbol != "E")
+								newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*" + outSymbol;
+							else if (inSymbol != "E" && outSymbol == "E")
+								newTransitionSymbol = inSymbol + "(" + loopSymbol + ")*";
+							else if (inSymbol == "E" && outSymbol != "E")
+								newTransitionSymbol = "(" + loopSymbol + ")*" + outSymbol;
+							else if (inSymbol == "E" && outSymbol == "E")
+								newTransitionSymbol = "(" + loopSymbol + ")*";
 						}
 						else
 						{
-							newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+							if (inSymbol != "E" && outSymbol != "E")
+								newTransitionSymbol = inSymbol + loopSymbol + "*" + outSymbol;
+							else if (inSymbol != "E" && outSymbol == "E")
+								newTransitionSymbol = inSymbol + loopSymbol + "*";
+							else if (inSymbol == "E" && outSymbol != "E")
+								newTransitionSymbol = loopSymbol + "*" + outSymbol;
+							else if (inSymbol == "E" && outSymbol == "E")
+								newTransitionSymbol = loopSymbol + "*";
 						}
 					}
-					else if (inSymbol == "E" && loopSymbol == "E" && outSymbol == "E")
+					else
 					{
-						newTransitionSymbol = "E";
-					}
-					else if (inSymbol != "E" && loopSymbol == "E" && outSymbol == "E")
-					{
-						newTransitionSymbol = inSymbol;
-					}
-					else if (inSymbol == "E" && loopSymbol != "E" && outSymbol == "E")
-					{
-						newTransitionSymbol = loopSymbol + "*";
-					}
-					else if (inSymbol == "E" && loopSymbol == "E" && outSymbol != "E")
-					{
-						newTransitionSymbol = outSymbol;
-					}
-					else if (inSymbol != "E" && loopSymbol != "E" && outSymbol == "E")
-					{
-						newTransitionSymbol = inSymbol + loopSymbol + "*";
-					}
-					else if (inSymbol == "E" && loopSymbol != "E" && outSymbol != "E")
-					{
-						newTransitionSymbol = loopSymbol + "*" + outSymbol;
-					}
-					else if (inSymbol != "E" && loopSymbol == "E" && outSymbol != "E")
-					{
-						newTransitionSymbol = inSymbol + outSymbol;
+						if (inSymbol != "E" && outSymbol != "E")
+							newTransitionSymbol = inSymbol + outSymbol;
+						else if (inSymbol != "E" && outSymbol == "E")
+							newTransitionSymbol = inSymbol;
+						else if (inSymbol == "E" && outSymbol != "E")
+							newTransitionSymbol = outSymbol;
+						else if (inSymbol == "E" && outSymbol == "E")
+							newTransitionSymbol = "E";
 					}
 				}
 				else
@@ -385,30 +383,18 @@ void NondeterministicFiniteAutomaton::RemoveState(std::string stateToErase)
 					if (inSymbol != "E" && outSymbol != "E")
 					{
 						if (inSymbol.find('+') != std::string::npos && inSymbol[0] != '(' && inSymbol[inSymbol.size()-1] != ')')
-						{
 							newTransitionSymbol = "(" + inSymbol + ")" + outSymbol;
-						}
 						else if (outSymbol.find('+') != std::string::npos && outSymbol[0] != '(' && outSymbol[outSymbol.size() - 1] != ')')
-						{
 							newTransitionSymbol = inSymbol + "(" + outSymbol + ")";
-						}
 						else
-						{
 							newTransitionSymbol = inSymbol + outSymbol;
-						}
 					}
 					else if (inSymbol != "E" && outSymbol == "E")
-					{
 						newTransitionSymbol = inSymbol;
-					}
 					else if (inSymbol == "E" && outSymbol != "E")
-					{
 						newTransitionSymbol = outSymbol;
-					}
 					else
-					{
 						newTransitionSymbol = "E";
-					}
 				}
 
 				m_transitions.InsertTransition(inTransitions[i], newTransitionSymbol, { outTransitions[o] });
